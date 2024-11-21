@@ -1,4 +1,4 @@
-# DataBbase
+# Database
 ![Screenshot 2024-11-21 114913](https://github.com/user-attachments/assets/f5bd34b3-eecc-420a-ace6-54d9382be393)
 ![Screenshot 2024-11-21 114904](https://github.com/user-attachments/assets/616689a6-9071-4f24-870d-b8f9232b9c44)
 # Method
