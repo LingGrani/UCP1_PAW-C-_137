@@ -1,0 +1,179 @@
+<div class="container mt-5">
+  <h1 class="text-center">Kandang</h1>
+
+  <!-- List of Todos -->
+  <ul id="kandang" class="list-group">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col" style="width: 30%;">Nama Kandang</th>
+                <th scope="col" style="width: 30%;">Lokasi</th>
+                <th scope="col" style="width: 30%;">Kapasitas</th>
+                <th scope="col" style="width: 5%;"></th>
+                <th scope="col" style="width: 5%;"><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add</button></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% todos.forEach(todo=> { %>
+                <tr>
+                    <td class="w-20"><%= todo.nama %></td>
+                    <td class="w-20"><%= todo.lokasi %></td>
+                    <td class="w-20"><%= todo.kapasitas %></td>
+                    <td><button class="btn btn-sm btn-success mr-2 editBtn" data-id="<%= todo.id %>" data-nm="<%= todo.nama %>" data-lk="<%= todo.lokasi %>" data-kp="<%= todo.kapasitas %>">Edit</button></td>
+                    <td><button class="btn btn-sm btn-danger deleteBtn" data-id="<%= todo.id %>">Delete</button></td>
+                </tr>
+                <% }); %>
+        </tbody>
+      </table>
+  </ul>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form id="addKandangForm">
+                <div class="form-group">
+                    <label style="font-weight: bold;" for="namaKandang">Nama Kandang</label>
+                    <input type="text" id="namaKandang" class="form-control" required>
+                    
+                    <label style="font-weight: bold;" for="lokasiKandang">Lokasi</label>
+                    <input type="text" id="lokasiKandang" class="form-control" required>
+                    
+                    <label style="font-weight: bold;" for="kapasitasKandang">Kapasitas</label>
+                    <input type="number" id="kapasitasKandang" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Todo Modal -->
+  <div id="editModal" class="modal fade" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="editModalLabel">Edit Kandang</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="editKandangForm">
+                    <div class="form-group">
+                        <label style="font-weight: bold;" for="editKandang">Nama Kandang</label>
+                        <input type="text" id="editKandang" class="form-control" required>
+                        <label style="font-weight: bold;" for="editLokasi">Lokasi</label>
+                        <input type="text" id="editLokasi" class="form-control" required>
+                        <label style="font-weight: bold;" for="editKapasitas">Kapasitas</label>
+                        <input type="number" id="editKapasitas" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#addKandangForm').on('submit', function (e) {
+    e.preventDefault();
+
+    // Ambil nilai dari input
+    const namaKandang = $('#namaKandang').val()?.trim();
+    const lokasi = $('#lokasiKandang').val()?.trim();
+    const kapasitas = parseInt($('#kapasitasKandang').val());
+
+    // Validasi input
+    if (!namaKandang || !lokasi || isNaN(kapasitas)) {
+        alert('Semua kolom harus diisi dengan benar!');
+        return;
+    }
+
+    // Kirim data ke server
+    $.ajax({
+        url: '/kandang-crud',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            nama: namaKandang,
+            lokasi: lokasi,
+            kapasitas: kapasitas
+        }),
+        success: function (response) {
+            location.reload();
+        },
+        error: function (error) {
+            console.error('Error adding kandang:', error.responseText);
+            alert('Gagal menambahkan kandang.');
+        }
+        });
+    });
+
+      // Delete a todo
+    $('.deleteBtn').on('click', function () {
+        const id = $(this).data('id');
+        if (confirm('Apakah Anda yakin ingin menghapus kandang ini?')) {
+            $.ajax({
+                url: '/kandang-crud/' + id,
+                type: 'DELETE',
+                success: function () {
+                    alert('Kandang berhasil dihapus.');
+                    location.reload(); // Reload to show updated list
+                },
+                error: function (error) {
+                    alert('Gagal menghapus kandang.');
+                    console.error('Error deleting kandang:', error.responseText);
+                }
+            });
+        }
+    });
+
+      // Show edit modal with the current task
+      let editId;
+      $('.editBtn').on('click', function () {
+          editId = $(this).data('id');
+          let nm = $(this).data('nm');
+          let lk = $(this).data('lk');
+          let kp = $(this).data('kp');
+
+          $('#editKandang').val(nm);
+          $('#editLokasi').val(lk);
+          $('#editKapasitas').val(kp);
+
+          $('#editModal').modal('show');
+      });
+
+      // Update todo on form submission
+      $('#editKandangForm').on('submit', function (e) {
+          e.preventDefault();
+          const namaKandang = $('#editKandang').val()?.trim();
+          const lokasi = $('#editLokasi').val()?.trim();
+          const kapasitas = parseInt($('#editKapasitas').val());
+          if (!namaKandang || !lokasi || isNaN(kapasitas)) {
+            alert('Semua kolom harus diisi dengan benar!');
+            return;
+            }
+              $.ajax({
+                  url: '/kandang-crud/' + editId,
+                  type: 'PUT',
+                  data: JSON.stringify({
+                    nama: namaKandang,
+                    lokasi: lokasi,
+                    kapasitas: kapasitas
+                  }),
+                  contentType: 'application/json',
+                  success: function () {
+                      location.reload(); // Reload to show the updated todo
+                  }
+            });
+      });
+  });
+</script>
